@@ -1,3 +1,4 @@
+import traceback
 from time import sleep
 
 from django.core.files import storage
@@ -53,16 +54,12 @@ class SlowStorage(storage.FileSystemStorage):
     def _open(self, name, mode="rb"):
         if self.slow:
             sleep(1)
-            import traceback
-
             traceback.print_stack()
         return super()._open(name, mode=mode)
 
     def _save(self, name, content):
         if self.slow:
             sleep(1)
-            import traceback
-
             traceback.print_stack()
         return super()._save(name, content)
 

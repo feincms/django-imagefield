@@ -1,8 +1,6 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "organizeImports": {
-    "enabled": false
-  },
+  "$schema": "https://biomejs.dev/schemas/2.2.3/schema.json",
+  "assist": { "actions": { "source": { "organizeImports": "off" } } },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
@@ -15,19 +13,25 @@
       "a11y": {
         "noSvgWithoutTitle": "off"
       },
+      "complexity": {
+        "noImportantStyles": "off"
+      },
       "correctness": {
-        "noUndeclaredVariables": "error",
+        "noInnerDeclarations": "off",
+        "noUndeclaredVariables": "warn",
+        "noUnknownTypeSelector": "warn",
         "noUnusedImports": "error",
         "noUnusedVariables": "error",
-        "useArrayLiterals": "error",
         "useHookAtTopLevel": "error"
       },
       "security": {
         "noDangerouslySetInnerHtml": "warn"
       },
       "style": {
+        "noDescendingSpecificity": "warn",
         "noParameterAssign": "off",
-        "useForOf": "warn"
+        "useForOf": "warn",
+        "useArrayLiterals": "error"
       },
       "suspicious": {
         "noArrayIndexKey": "warn",
