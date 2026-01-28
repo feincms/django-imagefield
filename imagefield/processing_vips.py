@@ -2,6 +2,8 @@
 
 import pyvips
 
+from imagefield.backend_base import calculate_crop_box
+
 
 VIPS_PROCESSORS = {}
 
@@ -135,46 +137,11 @@ def crop(get_image, size):
     def processor(image, context):
         image = get_image(image, context)
 
-        ppoi_x_axis = int(image.width * context.ppoi[0])
-        ppoi_y_axis = int(image.height * context.ppoi[1])
-        center_pixel_coord = (ppoi_x_axis, ppoi_y_axis)
+        # Calculate crop box using shared function
+        box = calculate_crop_box(image.width, image.height, width, height, context.ppoi)
 
-        # Calculate the aspect ratio of `image`
-        orig_aspect_ratio = float(image.width) / float(image.height)
-        crop_aspect_ratio = float(width) / float(height)
-
-        # Figure out if we're trimming from the left/right or top/bottom
-        if orig_aspect_ratio >= crop_aspect_ratio:
-            # `image` is wider than what's needed,
-            # crop from left/right sides
-            orig_crop_width = int((crop_aspect_ratio * float(image.height)) + 0.5)
-            orig_crop_height = image.height
-            crop_boundary_top = 0
-            crop_boundary_left = center_pixel_coord[0] - (orig_crop_width // 2)
-            if crop_boundary_left < 0:
-                crop_boundary_left = 0
-            elif crop_boundary_left + orig_crop_width > image.width:
-                crop_boundary_left = image.width - orig_crop_width
-
-        else:
-            # `image` is taller than what's needed,
-            # crop from top/bottom sides
-            orig_crop_width = image.width
-            orig_crop_height = int((float(image.width) / crop_aspect_ratio) + 0.5)
-            crop_boundary_left = 0
-            crop_boundary_top = center_pixel_coord[1] - (orig_crop_height // 2)
-            if crop_boundary_top < 0:
-                crop_boundary_top = 0
-            elif crop_boundary_top + orig_crop_height > image.height:
-                crop_boundary_top = image.height - orig_crop_height
-
-        # Crop the image (vips.crop uses left, top, width, height)
-        cropped_image = image.crop(
-            crop_boundary_left,
-            crop_boundary_top,
-            orig_crop_width,
-            orig_crop_height,
-        )
+        # vips crop uses (left, top, width, height) format
+        cropped_image = image.crop(box.left, box.top, box.width, box.height)
 
         # Resize to exact dimensions
         return cropped_image.thumbnail_image(width, height=height)

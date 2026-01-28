@@ -2,6 +2,8 @@
 
 from PIL import Image, ImageOps
 
+from imagefield.backend_base import calculate_crop_box
+
 
 PILLOW_PROCESSORS = {}
 
@@ -122,61 +124,23 @@ def thumbnail(get_image, size):
 
 @register_pillow
 def crop(get_image, size):
+    """Crop image to exact size, centered on PPOI."""
     width, height = size
 
     def processor(image, context):
         image = get_image(image, context)
 
-        ppoi_x_axis = int(image.size[0] * context.ppoi[0])
-        ppoi_y_axis = int(image.size[1] * context.ppoi[1])
-        center_pixel_coord = (ppoi_x_axis, ppoi_y_axis)
-        # Calculate the aspect ratio of `image`
-        orig_aspect_ratio = float(image.size[0]) / float(image.size[1])
-        crop_aspect_ratio = float(width) / float(height)
-
-        # Figure out if we're trimming from the left/right or top/bottom
-        if orig_aspect_ratio >= crop_aspect_ratio:
-            # `image` is wider than what's needed,
-            # crop from left/right sides
-            orig_crop_width = int((crop_aspect_ratio * float(image.size[1])) + 0.5)
-            orig_crop_height = image.size[1]
-            crop_boundary_top = 0
-            crop_boundary_bottom = orig_crop_height
-            crop_boundary_left = center_pixel_coord[0] - (orig_crop_width // 2)
-            crop_boundary_right = crop_boundary_left + orig_crop_width
-            if crop_boundary_left < 0:
-                crop_boundary_left = 0
-                crop_boundary_right = crop_boundary_left + orig_crop_width
-            elif crop_boundary_right > image.size[0]:
-                crop_boundary_right = image.size[0]
-                crop_boundary_left = image.size[0] - orig_crop_width
-
-        else:
-            # `image` is taller than what's needed,
-            # crop from top/bottom sides
-            orig_crop_width = image.size[0]
-            orig_crop_height = int((float(image.size[0]) / crop_aspect_ratio) + 0.5)
-            crop_boundary_left = 0
-            crop_boundary_right = orig_crop_width
-            crop_boundary_top = center_pixel_coord[1] - (orig_crop_height // 2)
-            crop_boundary_bottom = crop_boundary_top + orig_crop_height
-            if crop_boundary_top < 0:
-                crop_boundary_top = 0
-                crop_boundary_bottom = crop_boundary_top + orig_crop_height
-            elif crop_boundary_bottom > image.size[1]:
-                crop_boundary_bottom = image.size[1]
-                crop_boundary_top = image.size[1] - orig_crop_height
-        # Cropping the image from the original image
-        cropped_image = image.crop(
-            (
-                crop_boundary_left,
-                crop_boundary_top,
-                crop_boundary_right,
-                crop_boundary_bottom,
-            )
+        # Calculate crop box using shared function
+        box = calculate_crop_box(
+            image.size[0], image.size[1], width, height, context.ppoi
         )
-        # Resizing the newly cropped image to the size specified
-        # (as determined by `width`x`height`)
+
+        # PIL crop uses (left, top, right, bottom) format
+        cropped_image = image.crop(
+            (box.left, box.top, box.left + box.width, box.top + box.height)
+        )
+
+        # Resize to exact dimensions
         return cropped_image.resize((width, height), Image.Resampling.LANCZOS)
 
     return processor
