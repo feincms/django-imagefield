@@ -1,7 +1,5 @@
 """Image processors for pyvips backend."""
 
-import pyvips
-
 from imagefield.backend_base import calculate_crop_box
 
 
@@ -65,15 +63,13 @@ def process_png(get_image):
     """Process PNG images - convert palette mode to RGBA."""
 
     def processor(image, context):
-        # Check if image is palette/indexed mode
-        # In vips, this would be an image with a colormap
-        if context.save_kwargs["format"] == "PNG":
-            # pyvips doesn't have an exact equivalent to PIL's "P" mode,
-            # but we can check if the image has bands < 3 and convert
-            if image.bands < 3:
-                image = image.colourspace("srgb")
-            # Ensure we have an alpha channel if needed
-            if image.bands == 3 and not image.hasalpha():
+        # Only convert palette/indexed images, like Pillow backend
+        # In vips, indexed/palette images typically have bands < 3
+        if context.save_kwargs["format"] == "PNG" and image.bands < 3:
+            # Convert to sRGB (RGB)
+            image = image.colourspace("srgb")
+            # Add alpha channel for consistency with Pillow's RGBA conversion
+            if not image.hasalpha():
                 image = image.addalpha()
 
         return get_image(image, context)
@@ -98,16 +94,15 @@ def process_gif(get_image):
 
 @register_vips
 def preserve_icc_profile(get_image):
-    """Preserve ICC color profile in processed images."""
+    """Preserve ICC color profile in processed images.
+
+    Note: vips automatically preserves ICC profiles in write_to_buffer,
+    so this is a no-op for compatibility with the Pillow backend's
+    processing pipeline.
+    """
 
     def processor(image, context):
-        try:
-            icc_profile = image.get("icc-profile-data")
-            if icc_profile:
-                context.save_kwargs["icc_profile"] = icc_profile
-        except pyvips.Error:
-            # No ICC profile present
-            pass
+        # vips preserves ICC profiles automatically - nothing to do
         return get_image(image, context)
 
     return processor

@@ -21,12 +21,10 @@ tox -e py310-dj42
 
 The test suite includes:
 
-- **44 tests** for Pillow backend and core functionality
-- **31 additional tests** for vips backend functionality
-  - 12 VipsBackendTestCase tests (backend methods and processors)
-  - 19 VipsIntegrationTest tests (full ImageField integration)
-
-**Total: 85 tests** when pyvips is installed.
+- Tests for Pillow backend and core functionality
+- Additional tests for vips backend functionality:
+  - VipsBackendTestCase tests (backend methods and processors)
+  - VipsIntegrationTest tests (full ImageField integration)
 
 ### Verification Tests
 

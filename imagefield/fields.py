@@ -256,7 +256,9 @@ class ImageFieldFile(files.ImageFieldFile):
                 image = handler(image, context)
 
                 with io.BytesIO() as buf:
-                    backend.save(image, buf, **context.save_kwargs)
+                    # Extract format from save_kwargs to pass as positional arg
+                    format_name = context.save_kwargs.pop("format")
+                    backend.save(image, buf, format_name, **context.save_kwargs)
                     return buf.getvalue()
 
         finally:
