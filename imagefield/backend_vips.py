@@ -30,7 +30,9 @@ class VipsBackend(ImageBackend):
         if isinstance(file, str):
             return pyvips.Image.new_from_file(file)
         elif hasattr(file, "read"):
-            # File-like object - read into bytes
+            # File-like object - rewind if possible, then read into bytes
+            if hasattr(file, "seek"):
+                file.seek(0)
             data = file.read()
             return pyvips.Image.new_from_buffer(data, "")
         else:
