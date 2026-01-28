@@ -29,13 +29,13 @@ def build_handler(processors, handler=None, registry=None):
     return handler
 
 
-def register(fn):
+def register_pillow(fn):
     """Register processor for Pillow backend."""
     PILLOW_PROCESSORS[fn.__name__] = fn
     return fn
 
 
-@register
+@register_pillow
 def default(get_image):
     return build_handler(
         [
@@ -49,7 +49,7 @@ def default(get_image):
     )
 
 
-@register
+@register_pillow
 def autorotate(get_image):
     def processor(image, context):
         return get_image(ImageOps.exif_transpose(image), context)
@@ -57,7 +57,7 @@ def autorotate(get_image):
     return processor
 
 
-@register
+@register_pillow
 def process_jpeg(get_image):
     def processor(image, context):
         if context.save_kwargs["format"] == "JPEG":
@@ -70,7 +70,7 @@ def process_jpeg(get_image):
     return processor
 
 
-@register
+@register_pillow
 def process_png(get_image):
     def processor(image, context):
         if context.save_kwargs["format"] == "PNG" and image.mode == "P":
@@ -81,7 +81,7 @@ def process_png(get_image):
     return processor
 
 
-@register
+@register_pillow
 def process_gif(get_image):
     def processor(image, context):
         if context.save_kwargs["format"] != "GIF":
@@ -97,7 +97,7 @@ def process_gif(get_image):
     return processor
 
 
-@register
+@register_pillow
 def preserve_icc_profile(get_image):
     def processor(image, context):
         icc_profile = image.info.get("icc_profile")
@@ -108,7 +108,7 @@ def preserve_icc_profile(get_image):
     return processor
 
 
-@register
+@register_pillow
 def thumbnail(get_image, size):
     def processor(image, context):
         image = get_image(image, context)
@@ -120,7 +120,7 @@ def thumbnail(get_image, size):
     return processor
 
 
-@register
+@register_pillow
 def crop(get_image, size):
     width, height = size
 

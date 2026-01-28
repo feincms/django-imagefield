@@ -52,14 +52,9 @@ class VipsBackend(ImageBackend):
             IOError: If image cannot be saved
         """
         # Map format to vips suffix
-        format_map = {
-            "JPEG": ".jpg",
-            "PNG": ".png",
-            "GIF": ".gif",
-            "TIFF": ".tif",
-            "WEBP": ".webp",
-        }
-        suffix = format_map.get(format.upper(), ".jpg")
+        # vips uses file extensions to determine output format
+        extension = self.get_extension(format.upper())
+        suffix = f".{extension}"
 
         # Map PIL-style kwargs to vips-style kwargs
         vips_kwargs = {}
@@ -67,17 +62,17 @@ class VipsBackend(ImageBackend):
         if format.upper() == "JPEG":
             if "quality" in kwargs:
                 vips_kwargs["Q"] = kwargs["quality"]
-            if "progressive" in kwargs and kwargs["progressive"]:
+            if kwargs.get("progressive"):
                 vips_kwargs["interlace"] = True
-            if "optimize" in kwargs and kwargs["optimize"]:
+            if kwargs.get("optimize"):
                 vips_kwargs["optimize_coding"] = True
         elif format.upper() == "PNG":
-            if "optimize" in kwargs and kwargs["optimize"]:
+            if kwargs.get("optimize"):
                 vips_kwargs["compression"] = 9
         elif format.upper() == "WEBP":
             if "quality" in kwargs:
                 vips_kwargs["Q"] = kwargs["quality"]
-            if "lossless" in kwargs and kwargs["lossless"]:
+            if kwargs.get("lossless"):
                 vips_kwargs["lossless"] = True
 
         # Write to buffer
@@ -142,6 +137,14 @@ class VipsBackend(ImageBackend):
                 "tiffload_buffer": "TIFF",
                 "webpload": "WEBP",
                 "webpload_buffer": "WEBP",
+                "heifload": "HEIF",
+                "heifload_buffer": "HEIF",
+                "svgload": "SVG",
+                "svgload_buffer": "SVG",
+                "pdfload": "PDF",
+                "pdfload_buffer": "PDF",
+                "jp2kload": "JP2",
+                "jp2kload_buffer": "JP2",
             }
             return format_map.get(loader, "JPEG")
         except pyvips.Error:

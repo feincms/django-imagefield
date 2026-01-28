@@ -15,13 +15,14 @@ from imagefield.processing_pillow import (
     process_gif,
     process_jpeg,
     process_png,
-    register,
+    register_pillow,
     thumbnail,
 )
 
 
-# Legacy alias for backward compatibility
+# Legacy aliases for backward compatibility
 PROCESSORS = PILLOW_PROCESSORS
+register = register_pillow  # Backward compatibility alias
 
 
 __all__ = [

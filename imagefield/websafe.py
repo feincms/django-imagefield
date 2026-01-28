@@ -1,4 +1,4 @@
-from imagefield.processing import register
+from imagefield.processing_pillow import register_pillow
 
 
 # Register with both backends since this processor only manipulates context
@@ -9,7 +9,7 @@ except ImportError:
     register_vips = lambda fn: fn  # noqa: E731
 
 
-@register
+@register_pillow
 @register_vips
 def force_jpeg(get_image):
     def processor(image, context):

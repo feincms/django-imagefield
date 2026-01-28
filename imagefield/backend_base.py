@@ -4,6 +4,26 @@ from abc import ABC, abstractmethod
 from typing import BinaryIO
 
 
+# Standard format name to file extension mapping
+FORMAT_EXTENSIONS = {
+    "JPEG": "jpg",
+    "PNG": "png",
+    "GIF": "gif",
+    "TIFF": "tif",
+    "TIF": "tif",
+    "WEBP": "webp",
+    "BMP": "bmp",
+    "ICO": "ico",
+    "PDF": "pdf",
+    "SVG": "svg",
+    "HEIF": "heif",
+    "HEIC": "heic",
+    "AVIF": "avif",
+    "JP2": "jp2",
+    "J2K": "j2k",
+}
+
+
 class ImageBackend(ABC):
     """Minimal backend interface for image I/O and validation.
 
@@ -82,3 +102,14 @@ class ImageBackend(ABC):
         Returns:
             Dictionary mapping processor names to processor functions
         """
+
+    def get_extension(self, format_name: str) -> str:
+        """Get file extension for a format name.
+
+        Args:
+            format_name: Standard format name (JPEG, PNG, etc.)
+
+        Returns:
+            File extension without dot (jpg, png, etc.)
+        """
+        return FORMAT_EXTENSIONS.get(format_name, format_name.lower())
