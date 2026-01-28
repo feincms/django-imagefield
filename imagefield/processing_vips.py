@@ -44,15 +44,21 @@ def autorotate(get_image):
 
 @register_vips
 def process_jpeg(get_image):
-    """Process JPEG images - convert to RGB and set quality."""
+    """Process JPEG images - convert to RGB/grayscale, set quality."""
 
     def processor(image, context):
         if context.save_kwargs["format"] == "JPEG":
             context.save_kwargs["quality"] = 90
             context.save_kwargs["progressive"] = True
-            # Convert to RGB if not already
-            if image.interpretation != "srgb":
+            # JPEG supports RGB and grayscale ("b-w") natively
+            # Convert CMYK and images with alpha to RGB
+            # Preserve grayscale since JPEG supports it and saves space
+            if image.interpretation not in ("srgb", "b-w"):
+                # Convert CMYK and other color spaces to sRGB
                 image = image.colourspace("srgb")
+            # Remove alpha channel if present (JPEG doesn't support transparency)
+            if image.hasalpha():
+                image = image.flatten(background=[255, 255, 255])
         return get_image(image, context)
 
     return processor

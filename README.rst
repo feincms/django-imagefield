@@ -128,6 +128,29 @@ To use the pyvips backend:
 Both backends support all the same features and processors. You can switch
 between backends without changing your code or reprocessing existing images.
 
+Backend Behavior Differences
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+While both backends provide the same API, there are some subtle differences in
+how images are processed:
+
+**ICC Color Profiles**
+  - **Pillow**: Explicitly preserves ICC profiles via ``preserve_icc_profile`` processor
+  - **vips**: Automatically preserves ICC profiles during image operations
+
+**JPEG Color Space Handling**
+  - **Pillow**: Converts all non-RGB images (including grayscale) to RGB
+  - **vips**: Preserves grayscale images natively, only converts CMYK and images
+    with transparency. Results in smaller file sizes for grayscale JPEGs.
+
+**PNG Indexed Color Handling**
+  - **Pillow**: Converts palette mode ("P") images to RGBA
+  - **vips**: Converts images with < 3 bands (indexed/palette) to RGBA
+
+These differences are generally transparent and result in equivalent or improved
+output quality. The vips backend is optimized for better performance and smaller
+file sizes where possible.
+
 Custom Processors
 -----------------
 

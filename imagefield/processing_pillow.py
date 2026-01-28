@@ -61,10 +61,14 @@ def autorotate(get_image):
 
 @register_pillow
 def process_jpeg(get_image):
+    """Process JPEG images - convert to RGB, set quality."""
+
     def processor(image, context):
         if context.save_kwargs["format"] == "JPEG":
             context.save_kwargs["quality"] = 90
             context.save_kwargs["progressive"] = True
+            # TODO: Could preserve grayscale ("L" mode) to save space,
+            # but keeping simple conversion for now for compatibility
             if image.mode != "RGB":
                 image = image.convert("RGB")
         return get_image(image, context)
