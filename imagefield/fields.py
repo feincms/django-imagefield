@@ -287,7 +287,17 @@ class ImageFieldFile(files.ImageFieldFile):
         img = backend.open(content)
         backend.verify_supported(img)
         basename = os.path.splitext(name)[0]
-        name = f"{basename}.{backend.get_format(img).lower()}"
+        # Map format names to proper file extensions
+        format_name = backend.get_format(img)
+        extension_map = {
+            "JPEG": "jpg",
+            "PNG": "png",
+            "GIF": "gif",
+            "TIFF": "tiff",
+            "WEBP": "webp",
+        }
+        extension = extension_map.get(format_name, format_name.lower())
+        name = f"{basename}.{extension}"
 
         name = self.field.generate_filename(self.instance, name)
         self.name = self.storage.save(name, content, max_length=self.field.max_length)

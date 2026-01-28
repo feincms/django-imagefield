@@ -224,13 +224,15 @@ class VipsIntegrationTest(BaseTest):
         """Thumbnails should be generated correctly with vips."""
         m = Model.objects.create(image="python-logo.png")
 
-        # Should have thumb thumbnail
+        # Should have thumb thumbnail - URL is in __processed__ directory
         thumb_url = m.image.thumb
-        self.assertIn("__thumb__", thumb_url)
+        self.assertIn("__processed__", thumb_url)
+        self.assertTrue(thumb_url.endswith(".png"))
 
         # Should have desktop thumbnail
         desktop_url = m.image.desktop
-        self.assertIn("__desktop__", desktop_url)
+        self.assertIn("__processed__", desktop_url)
+        self.assertTrue(desktop_url.endswith(".png"))
 
     def test_ppoi_cropping(self):
         """PPOI-based cropping should work with vips."""
