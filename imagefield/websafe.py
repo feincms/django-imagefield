@@ -6,7 +6,8 @@ try:
     from imagefield.processing_vips import register_vips
 except ImportError:
     # vips backend not available, that's OK
-    register_vips = lambda fn: fn  # noqa: E731
+    def register_vips(fn):
+        return fn
 
 
 @register_pillow
