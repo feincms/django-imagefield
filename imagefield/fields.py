@@ -17,8 +17,8 @@ from django.db.models.fields import files
 from django.forms import ClearableFileInput
 from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
-from PIL import Image, ImageFile
 
+from imagefield.backends import get_backend
 from imagefield.processing import build_handler
 from imagefield.websafe import websafe
 from imagefield.widgets import (
@@ -31,6 +31,7 @@ from imagefield.widgets import (
 
 DEFAULTS = {
     "IMAGEFIELD_AUTOGENERATE": True,
+    "IMAGEFIELD_BACKEND": "pillow",
     "IMAGEFIELD_CACHE_TIMEOUT": lambda: randint(170 * 86400, 190 * 86400),
     "IMAGEFIELD_FORMATS": {},
     "IMAGEFIELD_VALIDATE_ON_SAVE": True,
@@ -246,15 +247,18 @@ class ImageFieldFile(files.ImageFieldFile):
         orig_name = self.name
         self.name = context.source
         try:
+            backend = get_backend()
             with self.open("rb") as file:
-                image = Image.open(file)
-                context.save_kwargs.setdefault("format", image.format)
+                image = backend.open(file)
+                context.save_kwargs.setdefault("format", backend.get_format(image))
 
-                handler = build_handler(context.processors)
+                handler = build_handler(context.processors, registry=backend.processors)
                 image = handler(image, context)
 
                 with io.BytesIO() as buf:
-                    _safe_image_save(image, buf, **context.save_kwargs)
+                    # Extract format from save_kwargs to pass as positional arg
+                    format_name = context.save_kwargs.pop("format")
+                    backend.save(image, buf, format_name, **context.save_kwargs)
                     return buf.getvalue()
 
         finally:
@@ -263,13 +267,16 @@ class ImageFieldFile(files.ImageFieldFile):
     @property
     def _image(self):
         if self.name:
+            backend = get_backend()
             original = io.BytesIO()
             if self.closed:
                 self.open("rb")
             original.write(self.read())
             self.seek(0)
             original.seek(0)
-            self.__dict__["_image"] = verified(Image.open(original))
+            image = backend.open(original)
+            backend.verify_supported(image)
+            self.__dict__["_image"] = image
 
         return self.__dict__.get("_image")
 
@@ -278,9 +285,14 @@ class ImageFieldFile(files.ImageFieldFile):
             super().save(name, content, save=True)
             return
 
-        img = verified(Image.open(content))
+        backend = get_backend()
+        img = backend.open(content)
+        backend.verify_supported(img)
         basename = os.path.splitext(name)[0]
-        name = f"{basename}.{img.format.lower()}"
+        # Get proper file extension from backend
+        format_name = backend.get_format(img)
+        extension = backend.get_extension(format_name)
+        name = f"{basename}.{extension}"
 
         name = self.field.generate_filename(self.instance, name)
         self.name = self.storage.save(name, content, max_length=self.field.max_length)
@@ -300,17 +312,6 @@ class ImageFieldFile(files.ImageFieldFile):
         self.field._clear_generated_files_for(self, filename)
 
     delete.alters_data = True
-
-
-def verified(img):
-    # Anything which exercises the machinery so that we may
-    # find out whether the image works at all (or not)
-    thumb = img.resize((10, 10)).convert("RGB")
-    with io.BytesIO() as target:
-        _safe_image_save(thumb, target, format=img.format)
-        _safe_image_save(thumb, target, format="PNG")
-        _safe_image_save(thumb, target, format="TIFF")
-    return img
 
 
 def raise_validation_error(field_name, exc):
@@ -504,18 +505,3 @@ class PPOIField(models.CharField):
     def formfield(self, **kwargs):
         kwargs["widget"] = PPOIWidget
         return super().formfield(**kwargs)
-
-
-def _safe_image_save(image, fp, **kwargs):
-    original = ImageFile.MAXBLOCK
-
-    try:
-        try:
-            image.save(fp, **kwargs)
-        except OSError:
-            # Increase MAXBLOCK temporarily and try again.
-            # See https://github.com/python-imaging/Pillow/issues/148
-            ImageFile.MAXBLOCK *= 16
-            image.save(fp, **kwargs)
-    finally:
-        ImageFile.MAXBLOCK = original

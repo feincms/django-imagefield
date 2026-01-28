@@ -83,6 +83,10 @@ Installation
 
 Install from PyPI: ``pip install django-imagefield``.
 
+For faster image processing with pyvips (optional)::
+
+    pip install django-imagefield[vips]
+
 Then add ``imagefield`` to your project's ``INSTALLED_APPS``::
 
     # settings.py
@@ -91,6 +95,114 @@ Then add ``imagefield`` to your project's ``INSTALLED_APPS``::
       "imagefield",
       ...
     ]
+
+
+Image Processing Backends
+==========================
+
+django-imagefield supports two image processing backends:
+
+**Pillow (default)**
+  The default backend using the Pillow library. Provides 100% backward
+  compatibility with existing code. No configuration needed.
+
+**pyvips (optional, faster)**
+  An optional backend using the libvips library through pyvips. Offers
+  significantly better performance:
+
+  - Significantly faster image processing
+  - More memory-efficient image handling
+  - Improved handling of large images
+
+To use the pyvips backend:
+
+1. Install the optional dependency::
+
+    pip install django-imagefield[vips]
+
+2. Configure the backend in your settings::
+
+    # settings.py
+    IMAGEFIELD_BACKEND = "vips"  # default is "pillow"
+
+Both backends support all the same features and processors. You can switch
+between backends without changing your code or reprocessing existing images.
+
+Backend Behavior Differences
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+While both backends provide the same API, there are some subtle differences in
+how images are processed:
+
+**ICC Color Profiles**
+  - **Pillow**: Explicitly preserves ICC profiles via ``preserve_icc_profile`` processor
+  - **vips**: Automatically preserves ICC profiles during image operations
+
+**JPEG Color Space Handling**
+  - **Pillow**: Converts all non-RGB images (including grayscale) to RGB
+  - **vips**: Preserves grayscale images natively, only converts CMYK and images
+    with transparency. Results in smaller file sizes for grayscale JPEGs.
+
+**PNG Indexed Color Handling**
+  - **Pillow**: Converts palette mode ("P") images to RGBA
+  - **vips**: Converts images with < 3 bands (indexed/palette) to RGBA
+
+These differences are generally transparent and result in equivalent or improved
+output quality. The vips backend is optimized for better performance and smaller
+file sizes where possible.
+
+Custom Processors
+-----------------
+
+When writing custom processors, you work directly with the native image
+objects of your chosen backend:
+
+**Pillow backend** - processors receive ``PIL.Image.Image`` objects::
+
+    from imagefield.processing_pillow import register_pillow
+    from PIL import ImageDraw, ImageFont
+
+    @register_pillow
+    def add_watermark(get_image, text="© Copyright"):
+        def processor(image, context):
+            image = get_image(image, context)
+            # Use full PIL API
+            draw = ImageDraw.Draw(image)
+            font = ImageFont.truetype("arial.ttf", 36)
+            draw.text((10, 10), text, font=font, fill=(255, 255, 255, 128))
+            return image
+        return processor
+
+**pyvips backend** - processors receive ``pyvips.Image`` objects::
+
+    from imagefield.processing_vips import register_vips
+    import pyvips
+
+    @register_vips
+    def add_watermark(get_image, text="© Copyright"):
+        def processor(image, context):
+            image = get_image(image, context)
+            # Use full pyvips API
+            text_img = pyvips.Image.text(text, font="sans 36", rgba=True)
+            return image.composite(text_img, 'over', x=10, y=10)
+        return processor
+
+For processors that only manipulate context (like changing format or quality),
+you can register them for both backends::
+
+    from imagefield.processing_pillow import register_pillow
+    try:
+        from imagefield.processing_vips import register_vips
+    except ImportError:
+        register_vips = lambda fn: fn
+
+    @register_pillow
+    @register_vips
+    def force_quality(get_image, quality=95):
+        def processor(image, context):
+            context.save_kwargs["quality"] = quality
+            return get_image(image, context)
+        return processor
 
 
 Usage

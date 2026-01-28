@@ -1,7 +1,17 @@
-from imagefield.processing import register
+from imagefield.processing_pillow import register_pillow
 
 
-@register
+# Register with both backends since this processor only manipulates context
+try:
+    from imagefield.processing_vips import register_vips
+except ImportError:
+    # vips backend not available, that's OK
+    def register_vips(fn):
+        return fn
+
+
+@register_pillow
+@register_vips
 def force_webp(get_image):
     def processor(image, context):
         context.save_kwargs["format"] = "WEBP"
