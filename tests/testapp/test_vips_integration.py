@@ -272,7 +272,15 @@ class VipsIntegrationTest(BaseTest):
 
     def test_delete_removes_generated_images(self):
         """Deleting image should remove generated thumbnails with vips."""
-        m = Model.objects.create(image="python-logo.png")
+        # Create a test image and save it (don't reference the fixture directly)
+        img = Image.new("RGB", (400, 300), color="green")
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        buf.seek(0)
+
+        m = Model()
+        m.image.save("test-delete.png", ContentFile(buf.read()), save=False)
+        m.save()
 
         # Generate thumbnails
         _ = m.image.thumb
