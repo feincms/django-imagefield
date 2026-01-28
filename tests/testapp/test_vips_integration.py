@@ -170,7 +170,7 @@ class VipsIntegrationTest(BaseTest):
         self.assertEqual(m.image.height, 600)
 
         # Should have generated thumbnails
-        self.assertTrue(hasattr(m.image, "square"))
+        self.assertTrue(hasattr(m.image, "thumb"))
         self.assertTrue(hasattr(m.image, "desktop"))
 
     def test_upload_and_process_png(self):
@@ -224,9 +224,9 @@ class VipsIntegrationTest(BaseTest):
         """Thumbnails should be generated correctly with vips."""
         m = Model.objects.create(image="python-logo.png")
 
-        # Should have square thumbnail
-        square_url = m.image.square
-        self.assertIn("__square__", square_url)
+        # Should have thumb thumbnail
+        thumb_url = m.image.thumb
+        self.assertIn("__thumb__", thumb_url)
 
         # Should have desktop thumbnail
         desktop_url = m.image.desktop
@@ -246,7 +246,7 @@ class VipsIntegrationTest(BaseTest):
         m.save()
 
         # Should generate thumbnails with custom PPOI
-        self.assertTrue(m.image.square)
+        self.assertTrue(m.image.thumb)
         self.assertEqual(m.ppoi, "0.2x0.8")
 
     def test_image_rotation_exif(self):
@@ -275,7 +275,7 @@ class VipsIntegrationTest(BaseTest):
         m = Model.objects.create(image="python-logo.png")
 
         # Generate thumbnails
-        _ = m.image.square
+        _ = m.image.thumb
         _ = m.image.desktop
 
         # Delete
