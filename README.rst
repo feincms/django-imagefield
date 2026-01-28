@@ -110,9 +110,9 @@ django-imagefield supports two image processing backends:
   An optional backend using the libvips library through pyvips. Offers
   significantly better performance:
 
-  - 5x faster image processing
-  - 4x less memory usage
-  - Better handling of large images
+  - Significantly faster image processing
+  - More memory-efficient image handling
+  - Improved handling of large images
 
 To use the pyvips backend:
 
