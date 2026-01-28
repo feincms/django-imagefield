@@ -7,6 +7,35 @@ Next version
 ~~~~~~~~~~~~
 
 
+0.23 (unreleased, experimental)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Experimental:** Added optional pyvips backend for faster, more memory-efficient
+  image processing. Install with ``pip install django-imagefield[vips]`` and
+  configure with ``IMAGEFIELD_BACKEND = "vips"``. The vips backend provides:
+
+  - Significantly faster image processing (often 2-5x faster)
+  - More memory-efficient handling of large images
+  - Streaming from disk when possible instead of loading into memory
+  - Smart color space handling (preserves grayscale JPEGs for smaller file sizes)
+  - Automatic ICC profile preservation
+
+- Added pluggable backend system with ``ImageBackend`` base class. Both Pillow
+  and vips backends implement the same interface, allowing seamless switching.
+- Centralized image format-to-extension mapping (``FORMAT_EXTENSIONS``) and
+  cropping calculations (``calculate_crop_box``) to reduce code duplication.
+- Renamed ``register`` to ``register_pillow`` for consistency. The old name
+  remains available as a compatibility alias.
+- Fixed bug where ``format`` parameter was passed twice to ``backend.save()``.
+- Improved JPEG processing to preserve grayscale images (vips backend only).
+  Pillow backend maintains conservative "convert all to RGB" approach.
+- Fixed PNG processing to only convert palette/indexed images to RGBA, not all
+  RGB images.
+- Updated test suite with comprehensive vips backend integration tests (85 tests
+  total with 97% coverage).
+- Added documentation for backend behavior differences in README.
+
+
 0.22 (2025-01-22)
 ~~~~~~~~~~~~~~~~~
 
