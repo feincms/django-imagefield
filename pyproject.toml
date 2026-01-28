@@ -40,6 +40,9 @@ optional-dependencies.tests = [
   "coverage",
   "pillow",
 ]
+optional-dependencies.vips = [
+  "pyvips[binary]>=2.2",
+]
 urls.Homepage = "https://github.com/matthiask/django-imagefield/"
 
 [tool.hatch.build]
