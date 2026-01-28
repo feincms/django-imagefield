@@ -167,13 +167,13 @@ objects of your chosen backend:
 For processors that only manipulate context (like changing format or quality),
 you can register them for both backends::
 
-    from imagefield.processing import register
+    from imagefield.processing_pillow import register_pillow
     try:
         from imagefield.processing_vips import register_vips
     except ImportError:
         register_vips = lambda fn: fn
 
-    @register
+    @register_pillow
     @register_vips
     def force_quality(get_image, quality=95):
         def processor(image, context):
