@@ -30,10 +30,20 @@ class VipsBackend(ImageBackend):
         if isinstance(file, str):
             return pyvips.Image.new_from_file(file)
         elif hasattr(file, "read"):
-            # File-like object - rewind if possible, then read into bytes
+            # Try to get a file path to avoid reading into memory
+            if hasattr(file, "name") and isinstance(file.name, str):
+                try:
+                    # Django File objects and similar have .name with file path
+                    return pyvips.Image.new_from_file(file.name)
+                except (pyvips.Error, OSError):
+                    # Fall back to buffer if path doesn't work
+                    pass
+
+            # File-like object without usable path - read into bytes
+            data = file.read()
+            # Rewind file for potential subsequent operations
             if hasattr(file, "seek"):
                 file.seek(0)
-            data = file.read()
             return pyvips.Image.new_from_buffer(data, "")
         else:
             # Assume bytes
