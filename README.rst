@@ -136,10 +136,10 @@ objects of your chosen backend:
 
 **Pillow backend** - processors receive ``PIL.Image.Image`` objects::
 
-    from imagefield.processing import register
+    from imagefield.processing_pillow import register_pillow
     from PIL import ImageDraw, ImageFont
 
-    @register
+    @register_pillow
     def add_watermark(get_image, text="© Copyright"):
         def processor(image, context):
             image = get_image(image, context)
