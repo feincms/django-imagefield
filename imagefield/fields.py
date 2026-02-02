@@ -276,9 +276,12 @@ class ImageFieldFile(files.ImageFieldFile):
             original.seek(0)
             image = backend.open(original)
             backend.verify_supported(image)
-            self.__dict__["_image"] = image
-
-        return self.__dict__.get("_image")
+            # For PIL: load pixel data into memory so we can close the buffer
+            if hasattr(image, "load"):
+                image.load()
+            original.close()
+            return image
+        return None
 
     def save(self, name, content, save=True):  # noqa: FBT002
         if not settings.IMAGEFIELD_VALIDATE_ON_SAVE:
@@ -393,12 +396,16 @@ class ImageField(models.ImageField):
         if data is not None:
             f = getattr(instance, self.name)
             if f.name:
+                image = None
                 try:
-                    _read = f._image
-
+                    image = f._image
                 except Exception as exc:
                     super().save_form_data(instance, "")
                     raise_validation_error(self.name, exc)
+                finally:
+                    if image is not None and hasattr(image, "close"):
+                        image.close()
+                    del image
 
             # Reset PPOI field if image field is cleared
             if not data and self.ppoi_field:
