@@ -316,6 +316,33 @@ The default preview is a max. 300x300 thumbnail. You can customize this by
 adding a ``preview`` format spec to the list of formats.
 
 
+Django REST Framework
+=====================
+
+To serialize image fields with their various formats in DRF, use ``SerializerMethodField``:
+
+.. code-block:: python
+
+    from rest_framework import serializers
+
+    class MyModelSerializer(serializers.ModelSerializer):
+        image_urls = serializers.SerializerMethodField()
+
+        class Meta:
+            model = MyModel
+            fields = ['id', 'image_urls']
+
+        def get_image_urls(self, obj):
+            if not obj.image:
+                return None
+            return {
+                'thumb': obj.image.thumb,
+                'desktop': obj.image.desktop,
+            }
+
+This returns a dictionary of URLs for each defined format.
+
+
 File Deletion
 =============
 
