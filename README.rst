@@ -315,6 +315,43 @@ there's a linked PPOI field, a PPOI picker.
 The default preview is a max. 300x300 thumbnail. You can customize this by
 adding a ``preview`` format spec to the list of formats.
 
+Customizing the Widget
+----------------------
+
+To use a different widget while keeping the preview and PPOI functionality, pass
+the widget **class** (not an instance) in your ModelForm:
+
+.. code-block:: python
+
+    from django import forms
+    from myapp.models import MyModel
+
+    class MyModelForm(forms.ModelForm):
+        class Meta:
+            model = MyModel
+            fields = ['image']
+            widgets = {
+                'image': forms.FileInput,  # ✓ Pass the class, not FileInput()
+            }
+
+To completely disable the preview and PPOI widget, override the field entirely
+with a regular Django ``forms.ImageField``:
+
+.. code-block:: python
+
+    class MyModelForm(forms.ModelForm):
+        image = forms.ImageField()  # Replaces the auto-generated field
+
+        class Meta:
+            model = MyModel
+            fields = ['image']
+
+See test_custom_widget_via_meta_widgets_ and test_custom_widget_without_preview_ in
+the test suite for working examples.
+
+.. _test_custom_widget_via_meta_widgets: https://github.com/feincms/django-imagefield/blob/main/tests/testapp/test_imagefield.py#L538
+.. _test_custom_widget_without_preview: https://github.com/feincms/django-imagefield/blob/main/tests/testapp/test_imagefield.py#L520
+
 
 Django REST Framework
 =====================

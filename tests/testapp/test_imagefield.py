@@ -6,6 +6,7 @@ import sys
 import time
 from unittest import expectedFailure, skipIf
 
+from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
@@ -504,3 +505,51 @@ class Test(BaseTest):
 
         m.image.delete()
         self.assertEqual(contents("__processed__"), [])
+
+    def test_custom_widget_with_preview(self):
+        """Custom widget can be used while keeping preview functionality"""
+        # When specifying a custom widget in formfield(),
+        # pass the class not an instance
+        field = Model._meta.get_field("image")
+        form_field = field.formfield(widget=forms.FileInput)
+
+        # The widget should be wrapped with preview functionality
+        self.assertIn("WithPreviewAndPPOI", form_field.widget.__class__.__name__)
+        self.assertTrue(hasattr(form_field.widget, "ppoi_field"))
+
+    def test_custom_widget_without_preview(self):
+        """Override form field entirely to disable preview functionality"""
+
+        class CustomForm(forms.ModelForm):
+            # Override the field entirely to use a plain ImageField
+            image = forms.ImageField(widget=forms.FileInput())
+
+            class Meta:
+                model = Model
+                fields = ["image", "ppoi"]
+
+        form = CustomForm()
+        # This should be a plain FileInput without preview functionality
+        self.assertIsInstance(form.fields["image"].widget, forms.FileInput)
+        self.assertNotIn(
+            "WithPreviewAndPPOI", form.fields["image"].widget.__class__.__name__
+        )
+
+    def test_custom_widget_via_meta_widgets(self):
+        """Using Meta.widgets with a custom widget class"""
+
+        class CustomForm(forms.ModelForm):
+            class Meta:
+                model = Model
+                fields = ["image", "ppoi"]
+                # Django's ModelForm will instantiate the widget class,
+                # but formfield() expects a class for with_preview_and_ppoi
+                widgets = {
+                    "image": forms.FileInput,
+                }
+
+        form = CustomForm()
+        # This should work - the widget gets wrapped with preview functionality
+        self.assertIn(
+            "WithPreviewAndPPOI", form.fields["image"].widget.__class__.__name__
+        )
