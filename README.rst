@@ -245,6 +245,66 @@ You should make sure to add the ``form.media`` to your page template's ``<head>`
 Retrieve the image URL in your template like, ``instance.image.thumb``.
 
 
+Template Usage
+==============
+
+Access image URLs in templates by using the format names defined in ``formats`` or
+``IMAGEFIELD_FORMATS``:
+
+.. code-block:: html
+
+    <!-- Direct URL access -->
+    <img src="{{ instance.image.thumb }}" alt="Thumbnail">
+    <img src="{{ instance.image.desktop }}" alt="Desktop">
+
+    <!-- In a background image -->
+    <div style="background-image: url({{ instance.image.thumb }})"></div>
+
+    <!-- Get width/height from auto-added fields -->
+    <img src="{{ instance.image.thumb }}"
+         width="{{ instance.image_width }}"
+         height="{{ instance.image_height }}"
+         alt="Image">
+
+
+IMAGEFIELD_FORMATS Structure
+=============================
+
+The ``IMAGEFIELD_FORMATS`` setting maps field paths to format specifications:
+
+.. code-block:: python
+
+    IMAGEFIELD_FORMATS = {
+        # Key: "app_label.model_name.field_name" (lowercase)
+        "yourapp.yourmodel.image": {
+            # Value: Dict of format_name -> processor_list
+            "format_name": [processor1, processor2, ...],
+        },
+    }
+
+Each format specification is a list of processors. Processors can be:
+
+- **String**: A processor name without arguments, e.g. ``"autorotate"``
+- **Tuple**: A processor with arguments, e.g. ``("thumbnail", (800, 600))``
+- **"default"**: Shorthand for common processors (autorotate, process_jpeg, process_png, process_gif, preserve_icc_profile)
+
+Common processor arguments:
+
+- ``("thumbnail", (width, height))``: Resize to fit within bounding box, preserving aspect ratio
+- ``("crop", (width, height))``: Crop to exact dimensions, centered on PPOI
+
+Example:
+
+.. code-block:: python
+
+    IMAGEFIELD_FORMATS = {
+        "blog.post.header_image": {
+            "thumbnail": ["default", ("thumbnail", (400, 300))],
+            "square": ["default", ("crop", (200, 200))],
+        },
+    }
+
+
 Forms
 =====
 
@@ -254,6 +314,19 @@ there's a linked PPOI field, a PPOI picker.
 
 The default preview is a max. 300x300 thumbnail. You can customize this by
 adding a ``preview`` format spec to the list of formats.
+
+
+File Deletion
+=============
+
+When an image field is cleared or a model instance is deleted, django-imagefield
+automatically removes all generated/processed images. However, the original uploaded
+file is not automatically deleted, following Django's default behavior to prevent
+accidental data loss.
+
+If you need to delete original files, you can implement a custom signal handler.
+See `Django's documentation on signals <https://docs.djangoproject.com/en/stable/ref/signals/#post-delete>`_
+for details on handling the ``post_delete`` signal.
 
 
 Image processors
