@@ -5,6 +5,7 @@ import re
 import sys
 import time
 from unittest import expectedFailure, skipIf
+from unittest.mock import PropertyMock, patch
 
 from django import forms
 from django.conf import settings
@@ -16,7 +17,13 @@ from django.test.utils import isolate_apps, override_settings
 from django.urls import reverse
 from PIL import Image
 
-from imagefield.fields import IMAGEFIELDS, Context, ImageField, _SealableAttribute
+from imagefield.fields import (
+    IMAGEFIELDS,
+    Context,
+    ImageField,
+    ImageFieldFile,
+    _SealableAttribute,
+)
 from testapp.models import (
     Model,
     ModelWithOptional,
@@ -246,6 +253,24 @@ class Test(BaseTest):
             m = Model(image="broken.png")
             m._skip_generate_files = True
             m.save()  # Doesn't crash
+
+    def test_no_validate_on_unchanged(self):
+        """
+        Saving a form without changing the image should not run
+        extended validation (not call _image).
+        """
+        client = self.login()
+        m = Model.objects.create(image="python-logo.png")
+
+        with patch.object(
+            ImageFieldFile, "_image", new_callable=PropertyMock
+        ) as mock_image:
+            response = client.post(
+                reverse("admin:testapp_model_change", args=(m.pk,)),
+                {"ppoi": "0.3x0.3"},
+            )
+            self.assertRedirects(response, "/admin/testapp/model/")
+            self.assertFalse(mock_image.called, "_image should not be accessed")
 
     def test_silent_failure(self):
         Model.objects.create(image="python-logo.jpg")
