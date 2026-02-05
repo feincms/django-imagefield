@@ -316,7 +316,7 @@ The default preview is a max. 300x300 thumbnail. You can customize this by
 adding a ``preview`` format spec to the list of formats.
 
 Customizing the Widget
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 To use a different widget while keeping the preview and PPOI functionality, pass
 the widget **class** (not an instance) in your ModelForm:

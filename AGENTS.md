@@ -73,6 +73,12 @@ The README serves as both GitHub documentation and Sphinx source:
 - Link to test files for working examples using GitHub URLs
 - Use the `feincms` organization in GitHub links (not `matthiask`)
 - Format: reStructuredText with code-block directives
+- **Heading hierarchy**: Must be consistent throughout the document:
+  - `=/=` for document title (with overline)
+  - `=` for level 1 headings
+  - `~` for level 2 headings
+  - `-` for level 3 headings
+  - Don't skip levels (e.g., don't go from level 1 directly to level 3)
 
 ### When Adding Documentation
 
@@ -81,6 +87,7 @@ The README serves as both GitHub documentation and Sphinx source:
 3. Write tests demonstrating the documented behavior
 4. Link to those tests from the documentation
 5. Keep explanations brief - assume Django knowledge
+6. After editing README.rst, validate with: `uv build && uvx twine check dist/*`
 
 ## Common Patterns
 
