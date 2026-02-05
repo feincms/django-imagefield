@@ -11,6 +11,7 @@ from django.core import checks
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 from django.db.models import signals
 from django.db.models.fields import files
@@ -393,7 +394,8 @@ class ImageField(models.ImageField):
             super().save_form_data(instance, "")
             raise_validation_error(self.name, exc)
 
-        if data is not None:
+        if isinstance(data, UploadedFile):
+            # Validate newly uploaded images
             f = getattr(instance, self.name)
             if f.name:
                 image = None
@@ -407,9 +409,9 @@ class ImageField(models.ImageField):
                         image.close()
                     del image
 
-            # Reset PPOI field if image field is cleared
-            if not data and self.ppoi_field:
-                setattr(instance, self.ppoi_field, "0.5x0.5")
+        # Reset PPOI field if image field is cleared
+        if not data and self.ppoi_field:
+            setattr(instance, self.ppoi_field, "0.5x0.5")
 
     def _generate_files(self, instance, **kwargs):
         # Set by the process_imagefields management command
