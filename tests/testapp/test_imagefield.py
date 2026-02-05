@@ -17,7 +17,13 @@ from django.test.utils import isolate_apps, override_settings
 from django.urls import reverse
 from PIL import Image
 
-from imagefield.fields import IMAGEFIELDS, Context, ImageField, ImageFieldFile, _SealableAttribute
+from imagefield.fields import (
+    IMAGEFIELDS,
+    Context,
+    ImageField,
+    ImageFieldFile,
+    _SealableAttribute,
+)
 from testapp.models import (
     Model,
     ModelWithOptional,
