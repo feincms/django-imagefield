@@ -272,6 +272,26 @@ class Test(BaseTest):
             self.assertRedirects(response, "/admin/testapp/model/")
             self.assertFalse(mock_image.called, "_image should not be accessed")
 
+    def test_no_validate_on_clear(self):
+        """
+        Clearing an optional image field should not run
+        extended validation (not call _image).
+        """
+        client = self.login()
+        m = ModelWithOptional.objects.create(image="python-logo.png")
+
+        with patch.object(
+            ImageFieldFile, "_image", new_callable=PropertyMock
+        ) as mock_image:
+            response = client.post(
+                reverse("admin:testapp_modelwithoptional_change", args=(m.pk,)),
+                {"image-clear": "1", "image_ppoi": "0.5x0.5"},
+            )
+            self.assertRedirects(response, "/admin/testapp/modelwithoptional/")
+            self.assertFalse(mock_image.called, "_image should not be accessed")
+            m.refresh_from_db()
+            self.assertFalse(m.image)
+
     def test_silent_failure(self):
         Model.objects.create(image="python-logo.jpg")
         Model.objects.update(image="broken.png")  # DB-only update
