@@ -45,17 +45,14 @@ optional-dependencies.vips = [
 ]
 urls.Homepage = "https://github.com/matthiask/django-imagefield/"
 
-[tool.hatch.build]
-include = [
+[tool.hatch]
+build.include = [
   "imagefield/",
 ]
-
-[tool.hatch.version]
-path = "imagefield/__init__.py"
+version.path = "imagefield/__init__.py"
 
 [tool.ruff]
 target-version = "py310"
-
 fix = true
 show-fixes = true
 lint.extend-select = [
