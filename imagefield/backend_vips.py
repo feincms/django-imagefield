@@ -1,6 +1,5 @@
 """pyvips backend for django-imagefield."""
 
-import io
 from typing import BinaryIO
 
 import pyvips
@@ -49,28 +48,10 @@ class VipsBackend(ImageBackend):
             # Assume bytes
             return pyvips.Image.new_from_buffer(file, "")
 
-    def save(self, image, fp: BinaryIO, format: str, **kwargs) -> None:
-        """Save vips image to file-like object.
-
-        Maps PIL-style save parameters to pyvips equivalents.
-
-        Args:
-            image: pyvips.Image object
-            fp: File-like object to write to
-            format: Image format (JPEG, PNG, GIF, etc.)
-            **kwargs: Format-specific save options
-
-        Raises:
-            IOError: If image cannot be saved
-        """
-        # Map format to vips suffix
-        # vips uses file extensions to determine output format
-        extension = self.get_extension(format.upper())
-        suffix = f".{extension}"
-
-        # Map PIL-style kwargs to vips-style kwargs
+    def _vips_save_args(self, format: str, kwargs: dict) -> tuple[str, dict]:
+        """Return (suffix, vips_kwargs) for the given PIL-style format and kwargs."""
+        suffix = f".{self.get_extension(format.upper())}"
         vips_kwargs = {}
-
         if format.upper() == "JPEG":
             if "quality" in kwargs:
                 vips_kwargs["Q"] = kwargs["quality"]
@@ -86,44 +67,20 @@ class VipsBackend(ImageBackend):
                 vips_kwargs["Q"] = kwargs["quality"]
             if kwargs.get("lossless"):
                 vips_kwargs["lossless"] = True
+        return suffix, vips_kwargs
 
-        # Write to buffer
-        data = image.write_to_buffer(suffix, **vips_kwargs)
-        fp.write(data)
+    def save_to_bytes(self, image, format: str, **kwargs) -> bytes:
+        suffix, vips_kwargs = self._vips_save_args(format, kwargs)
+        return image.write_to_buffer(suffix, **vips_kwargs)
+
+    def save(self, image, fp: BinaryIO, format: str, **kwargs) -> None:
+        fp.write(self.save_to_bytes(image, format, **kwargs))
 
     def verify_supported(self, image) -> bool:
-        """Verify image is valid by testing operations.
-
-        Tests the image by creating a small thumbnail and attempting
-        to save in multiple formats.
-
-        Args:
-            image: pyvips.Image object
-
-        Returns:
-            True if image is valid
-
-        Raises:
-            ValueError: If image is broken or unsupported
-        """
-        # Test basic operations to ensure image is valid
-        thumb = image.thumbnail_image(10, height=10)
-        thumb = thumb.colourspace("srgb")
-
-        # Try saving in different formats
-        with io.BytesIO() as target:
-            # Use original format if available
-            data = thumb.write_to_buffer(".jpg", Q=90)
-            target.write(data)
-
-        with io.BytesIO() as target:
-            data = thumb.write_to_buffer(".png")
-            target.write(data)
-
-        with io.BytesIO() as target:
-            data = thumb.write_to_buffer(".tif")
-            target.write(data)
-
+        thumb = image.thumbnail_image(10, height=10).colourspace("srgb")
+        thumb.write_to_buffer(".jpg", Q=90)
+        thumb.write_to_buffer(".png")
+        thumb.write_to_buffer(".tif")
         return True
 
     def get_format(self, image) -> str:

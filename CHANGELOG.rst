@@ -6,6 +6,9 @@ Change log
 Next version
 ~~~~~~~~~~~~
 
+- Added Python 3.14.
+- Optimized aspects of the vips backend.
+
 
 0.23 (unreleased, experimental)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

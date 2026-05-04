@@ -1,5 +1,4 @@
 import hashlib
-import io
 import logging
 import os
 import warnings
@@ -133,6 +132,42 @@ class VersatileImageProxy:
 _ProcessBase = namedtuple("_ProcessBase", "path basename")
 
 
+class _NonclosingProxy:
+    """Thin file-like proxy that swallows close().
+
+    Pillow sets image.fp to whatever file-like object was passed to
+    Image.open(), then calls image.fp.close() once decoding is done
+    (ImageFile._exclusive_fp logic).  When that object is a FieldFile
+    backed by an InMemoryUploadedFile the close() propagates all the way
+    down to the BytesIO, making the upload unreadable when Django's
+    pre_save later calls file.save(file.name, file.file, save=False).
+
+    By wrapping the FieldFile here we let Pillow (and the vips backend,
+    which also seeks/reads without closing) work normally while keeping
+    ownership of the file's lifetime with the caller.
+    """
+
+    __slots__ = ("_f",)
+
+    def __init__(self, f):
+        self._f = f
+
+    def read(self, *args):
+        return self._f.read(*args)
+
+    def seek(self, *args):
+        return self._f.seek(*args)
+
+    def tell(self):
+        return self._f.tell()
+
+    def readable(self):
+        return True
+
+    def close(self):
+        pass  # intentional no-op — caller owns the file's lifetime
+
+
 class ImageFieldFile(files.ImageFieldFile):
     def __getattr__(self, item):
         # The "field" attribute is not there after unpickling. We cannot
@@ -256,33 +291,23 @@ class ImageFieldFile(files.ImageFieldFile):
                 handler = build_handler(context.processors, registry=backend.processors)
                 image = handler(image, context)
 
-                with io.BytesIO() as buf:
-                    # Extract format from save_kwargs to pass as positional arg
-                    format_name = context.save_kwargs.pop("format")
-                    backend.save(image, buf, format_name, **context.save_kwargs)
-                    return buf.getvalue()
+                format_name = context.save_kwargs.pop("format")
+                return backend.save_to_bytes(image, format_name, **context.save_kwargs)
 
         finally:
             self.name = orig_name
 
     @property
     def _image(self):
-        if self.name:
-            backend = get_backend()
-            original = io.BytesIO()
-            if self.closed:
-                self.open("rb")
-            original.write(self.read())
-            self.seek(0)
-            original.seek(0)
-            image = backend.open(original)
-            backend.verify_supported(image)
-            # For PIL: load pixel data into memory so we can close the buffer
-            if hasattr(image, "load"):
-                image.load()
-            original.close()
-            return image
-        return None
+        if not self.name:
+            return None
+        backend = get_backend()
+        if self.closed:
+            self.open("rb")
+        image = backend.open(_NonclosingProxy(self))
+        backend.verify_supported(image)
+        self.seek(0)
+        return image
 
     def save(self, name, content, save=True):  # noqa: FBT002
         if not settings.IMAGEFIELD_VALIDATE_ON_SAVE:
