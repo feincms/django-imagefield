@@ -11,6 +11,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
 from django.test import Client
 from django.test.utils import isolate_apps, override_settings
@@ -136,6 +137,35 @@ class Test(BaseTest):
                 "python-logo-e6a99ea713c8.png",
             ],
         )
+
+    def test_upload_does_not_close_in_memory_file(self):
+        """
+        Image validation must not close the InMemoryUploadedFile's BytesIO.
+
+        Pillow's PNG decoder calls close() on whatever file-like object it
+        receives (via ImageFile._exclusive_fp).  Without _NonclosingProxy that
+        propagates down to the InMemoryUploadedFile's BytesIO, and Django's
+        subsequent pre_save → FieldFile.save(name, file.file, save=False) gets
+        "I/O operation on closed file".
+        """
+        with openimage("python-logo.png") as f:
+            data = f.read()
+
+        raw = io.BytesIO(data)
+        upload = InMemoryUploadedFile(
+            raw, "image", "python-logo.png", "image/png", len(data), None
+        )
+
+        field = Model._meta.get_field("image")
+        field.save_form_data(Model(), upload)
+
+        self.assertFalse(
+            raw.closed,
+            "InMemoryUploadedFile's BytesIO was closed during _image validation; "
+            "_NonclosingProxy must intercept Pillow's close() call",
+        )
+        raw.seek(0)
+        self.assertEqual(raw.read(4), b"\x89PNG")
 
     def test_autorotate(self):
         """Images are automatically rotated according to EXIF data"""
