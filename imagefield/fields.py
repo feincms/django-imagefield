@@ -269,9 +269,6 @@ class ImageFieldFile(files.ImageFieldFile):
         with self.open("rb") as file:
             image = backend.open(file)
             backend.verify_supported(image)
-            # Pillow is lazy: force decode before the file closes
-            if hasattr(image, "load"):
-                image.load()
         return image
 
     def save(self, name, content, save=True):  # noqa: FBT002
