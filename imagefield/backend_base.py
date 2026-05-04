@@ -1,5 +1,6 @@
 """Abstract base class for image processing backends."""
 
+import io
 from abc import ABC, abstractmethod
 from typing import BinaryIO, NamedTuple
 
@@ -160,6 +161,16 @@ class ImageBackend(ABC):
         Returns:
             Dictionary mapping processor names to processor functions
         """
+
+    def save_to_bytes(self, image, format: str, **kwargs) -> bytes:
+        """Encode image and return the compressed bytes.
+
+        Override in backends that can produce bytes more directly than
+        writing to a BytesIO (e.g. pyvips write_to_buffer).
+        """
+        buf = io.BytesIO()
+        self.save(image, buf, format, **kwargs)
+        return buf.getvalue()
 
     def get_extension(self, format_name: str) -> str:
         """Get file extension for a format name.

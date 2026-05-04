@@ -1,5 +1,4 @@
 import hashlib
-import io
 import logging
 import os
 import warnings
@@ -256,33 +255,24 @@ class ImageFieldFile(files.ImageFieldFile):
                 handler = build_handler(context.processors, registry=backend.processors)
                 image = handler(image, context)
 
-                with io.BytesIO() as buf:
-                    # Extract format from save_kwargs to pass as positional arg
-                    format_name = context.save_kwargs.pop("format")
-                    backend.save(image, buf, format_name, **context.save_kwargs)
-                    return buf.getvalue()
+                format_name = context.save_kwargs.pop("format")
+                return backend.save_to_bytes(image, format_name, **context.save_kwargs)
 
         finally:
             self.name = orig_name
 
     @property
     def _image(self):
-        if self.name:
-            backend = get_backend()
-            original = io.BytesIO()
-            if self.closed:
-                self.open("rb")
-            original.write(self.read())
-            self.seek(0)
-            original.seek(0)
-            image = backend.open(original)
+        if not self.name:
+            return None
+        backend = get_backend()
+        with self.open("rb") as file:
+            image = backend.open(file)
             backend.verify_supported(image)
-            # For PIL: load pixel data into memory so we can close the buffer
+            # Pillow is lazy: force decode before the file closes
             if hasattr(image, "load"):
                 image.load()
-            original.close()
-            return image
-        return None
+        return image
 
     def save(self, name, content, save=True):  # noqa: FBT002
         if not settings.IMAGEFIELD_VALIDATE_ON_SAVE:
