@@ -164,10 +164,6 @@ class _NonclosingProxy:
     def readable(self):
         return True
 
-    @property
-    def name(self):
-        return getattr(self._f, "name", None)
-
     def close(self):
         pass  # intentional no-op — caller owns the file's lifetime
 
