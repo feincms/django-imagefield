@@ -6,9 +6,6 @@ Change log
 Next version
 ~~~~~~~~~~~~
 
-- Added Python 3.14.
-- Optimized aspects of the vips backend.
-
 
 0.23 (unreleased, experimental)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,6 +34,8 @@ Next version
 - Updated test suite with comprehensive vips backend integration tests (85 tests
   total with 97% coverage).
 - Added documentation for backend behavior differences in README.
+- Added Python 3.14.
+- Optimized aspects of the vips backend.
 
 
 0.22 (2025-01-22)

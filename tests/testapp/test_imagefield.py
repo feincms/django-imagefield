@@ -446,6 +446,31 @@ class Test(BaseTest):
         WebsafeImage.objects.create(image="python-logo.tiff")
         self.assertEqual(contents("__processed__"), ["python-logo-2ebc6e32bcdb.jpg"])
 
+    def _assert_processed_jpeg(self, filename):
+        files = contents("__processed__")
+        self.assertEqual(len(files), 1)
+        self.assertTrue(files[0].endswith(".jpg"), files)
+        path = next(
+            os.path.join(root, files[0])
+            for root, _dirs, fnames in os.walk(
+                os.path.join(settings.MEDIA_ROOT, "__processed__")
+            )
+            if files[0] in fnames
+        )
+        with Image.open(path) as out:
+            self.assertEqual(out.format, "JPEG")
+
+    def test_websafe_mpo_with_mpo_extension(self):
+        # .mpo extension falls into websafe's else-branch, force_jpeg is added
+        WebsafeImage.objects.create(image="python-logo.mpo")
+        self._assert_processed_jpeg("python-logo.mpo")
+
+    def test_websafe_mpo_with_jpg_extension(self):
+        # MPO file with .jpg extension bypasses force_jpeg in websafe (extension
+        # looks safe); Pillow's MPO save still produces valid JPEG output.
+        WebsafeImage.objects.create(image="mpo-as-jpeg.jpg")
+        self._assert_processed_jpeg("mpo-as-jpeg.jpg")
+
     def test_websafe_gif(self):
         WebsafeImage.objects.create(image="python-logo.gif")
         self.assertEqual(contents("__processed__"), ["python-logo-24f8702383e7.gif"])

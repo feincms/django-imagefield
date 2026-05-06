@@ -23,8 +23,8 @@ django-imagefield is a Django library for handling images with automatic process
 
 **Run tests through tox:**
 ```bash
-tox -e py313-dj51  # Run specific Python/Django version
 tox -l             # List available test environments
+tox -e py313-dj52  # Run a specific environment (use tox -l to find current ones)
 ```
 
 **Important testing practices:**
