@@ -28,14 +28,14 @@ register = register_pillow  # Backward compatibility alias
 __all__ = [
     "PILLOW_PROCESSORS",
     "PROCESSORS",
-    "build_handler",
-    "register",
     "autorotate",
+    "build_handler",
     "crop",
     "default",
     "preserve_icc_profile",
     "process_gif",
     "process_jpeg",
     "process_png",
+    "register",
     "thumbnail",
 ]
