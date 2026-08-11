@@ -467,7 +467,7 @@ class ImageField(models.ImageField):
         base = fieldfile._process_base(filename)
 
         try:
-            folders, files = fieldfile.storage.listdir(base.path)
+            _folders, files = fieldfile.storage.listdir(base.path)
         except FileNotFoundError:
             # Fine!
             return

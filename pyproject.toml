@@ -94,8 +94,12 @@ lint.extend-select = [
 lint.extend-ignore = [
   # Allow zip() without strict=
   "B905",
+  "BLE001",
   # No line length errors
   "E501",
+  "RUF012",
+  "S110",
+  "TRY004",
   # Percent-formatting is fine
   "UP031",
 ]
