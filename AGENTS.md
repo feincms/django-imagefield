@@ -102,6 +102,7 @@ def my_processor(get_image, arg1, arg2):
         image = get_image(image, context)  # Call next processor
         # Modify the image
         return modified_image
+
     return processor
 ```
 
