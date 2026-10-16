@@ -127,8 +127,10 @@ The widget wrapping in `fields.py` expects widget **classes**, not instances:
 ## Git and Version Control
 
 - Repository is at `github.com/feincms/django-imagefield`
-- Follow conventional commit messages
 - Don't commit unless explicitly requested
+- Commit feature by feature: one commit per logical change
+- Keep commit messages minimal: a short subject line, usually no body
+- Don't add attribution (no `Co-Authored-By` or "Generated with" lines)
 - Never use `--no-verify` or skip hooks
 - Stage specific files by name (avoid `git add -A`)
 
