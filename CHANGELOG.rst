@@ -7,18 +7,17 @@ Next version
 ~~~~~~~~~~~~
 
 
-0.23 (unreleased, experimental)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+0.23 (2026-10-16)
+~~~~~~~~~~~~~~~~~
 
-- **Experimental:** Added optional pyvips backend for faster, more memory-efficient
-  image processing. Install with ``pip install django-imagefield[vips]`` and
-  configure with ``IMAGEFIELD_BACKEND = "vips"``. The vips backend provides:
+- **Experimental:** Added an optional pyvips backend. Install with ``pip
+  install django-imagefield[vips]`` and configure with ``IMAGEFIELD_BACKEND =
+  "vips"``. The backend is intended to be faster and more memory-efficient than
+  Pillow, but this hasn't been verified in production yet. The vips backend:
 
-  - Significantly faster image processing (often 2-5x faster)
-  - More memory-efficient handling of large images
-  - Streaming from disk when possible instead of loading into memory
-  - Smart color space handling (preserves grayscale JPEGs for smaller file sizes)
-  - Automatic ICC profile preservation
+  - Streams from disk when possible instead of loading into memory
+  - Preserves grayscale JPEGs for smaller file sizes
+  - Preserves ICC profiles
 
 - Added pluggable backend system with ``ImageBackend`` base class. Both Pillow
   and vips backends implement the same interface, allowing seamless switching.
@@ -31,10 +30,15 @@ Next version
   Pillow backend maintains conservative "convert all to RGB" approach.
 - Fixed PNG processing to only convert palette/indexed images to RGBA, not all
   RGB images.
-- Updated test suite with comprehensive vips backend integration tests (85 tests
-  total with 97% coverage).
+- Added vips backend integration tests.
 - Added documentation for backend behavior differences in README.
-- Added Python 3.14, Django 6.1.
+- Stopped running the extended image validation when the image field is
+  unchanged or cleared; only new uploads are validated now.
+- Reduced memory usage when validating uploaded images.
+- Fixed model instances being saved twice when ``IMAGEFIELD_VALIDATE_ON_SAVE``
+  is ``False``, e.g. when adding objects through the admin.
+- Documented and tested ways to customize the widget.
+- Added Python 3.14, Django 6.0 and 6.1.
 - Optimized aspects of the vips backend.
 
 
