@@ -34,7 +34,7 @@ Next version
 - Updated test suite with comprehensive vips backend integration tests (85 tests
   total with 97% coverage).
 - Added documentation for backend behavior differences in README.
-- Added Python 3.14.
+- Added Python 3.14, Django 6.1.
 - Optimized aspects of the vips backend.
 
 
