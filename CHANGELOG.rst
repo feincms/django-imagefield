@@ -110,7 +110,7 @@ Next version
 `0.16`_ (2022-05-04)
 ~~~~~~~~~~~~~~~~~~~~
 
-.. _0.16: https://github.com/matthiask/django-imagefield/compare/0.15...0.16
+.. _0.16: https://github.com/feincms/django-imagefield/compare/0.15...0.16
 
 - Raised the minimum Pillow version to 9.0.
 - Avoided a deprecation warning by using the ``PIL.Image.Resampling`` enum.
@@ -119,7 +119,7 @@ Next version
 `0.15`_ (2022-03-07)
 ~~~~~~~~~~~~~~~~~~~~
 
-.. _0.15: https://github.com/matthiask/django-imagefield/compare/0.14...0.15
+.. _0.15: https://github.com/feincms/django-imagefield/compare/0.14...0.15
 
 - Dropped support for Python < 3.8, Django < 3.2.
 - Added a simplistic workaround for ``IOError`` exceptions which still plague
@@ -129,7 +129,7 @@ Next version
 `0.14`_ (2021-12-23)
 ~~~~~~~~~~~~~~~~~~~~
 
-.. _0.14: https://github.com/matthiask/django-imagefield/compare/0.13...0.14
+.. _0.14: https://github.com/feincms/django-imagefield/compare/0.13...0.14
 
 - Renamed the main branch to ``main``.
 - Reformatted the frontend code using prettier and checked it using ESLint.
@@ -347,16 +347,16 @@ Next version
 - First release that should be fit for public consumption.
 
 
-.. _0.1: https://github.com/matthiask/django-imagefield/commit/013b9a810fa6
-.. _0.2: https://github.com/matthiask/django-imagefield/compare/0.1...0.2
-.. _0.3: https://github.com/matthiask/django-imagefield/compare/0.2...0.3
-.. _0.4: https://github.com/matthiask/django-imagefield/compare/0.3...0.4
-.. _0.5: https://github.com/matthiask/django-imagefield/compare/0.4...0.5
-.. _0.6: https://github.com/matthiask/django-imagefield/compare/0.5...0.6
-.. _0.7: https://github.com/matthiask/django-imagefield/compare/0.6...0.7
-.. _0.8: https://github.com/matthiask/django-imagefield/compare/0.7...0.8
-.. _0.9: https://github.com/matthiask/django-imagefield/compare/0.8...0.9
-.. _0.10: https://github.com/matthiask/django-imagefield/compare/0.9...0.10
-.. _0.11: https://github.com/matthiask/django-imagefield/compare/0.10...0.11
-.. _0.12: https://github.com/matthiask/django-imagefield/compare/0.11...0.12
-.. _0.13: https://github.com/matthiask/django-imagefield/compare/0.12...0.13
+.. _0.1: https://github.com/feincms/django-imagefield/commit/013b9a810fa6
+.. _0.2: https://github.com/feincms/django-imagefield/compare/0.1...0.2
+.. _0.3: https://github.com/feincms/django-imagefield/compare/0.2...0.3
+.. _0.4: https://github.com/feincms/django-imagefield/compare/0.3...0.4
+.. _0.5: https://github.com/feincms/django-imagefield/compare/0.4...0.5
+.. _0.6: https://github.com/feincms/django-imagefield/compare/0.5...0.6
+.. _0.7: https://github.com/feincms/django-imagefield/compare/0.6...0.7
+.. _0.8: https://github.com/feincms/django-imagefield/compare/0.7...0.8
+.. _0.9: https://github.com/feincms/django-imagefield/compare/0.8...0.9
+.. _0.10: https://github.com/feincms/django-imagefield/compare/0.9...0.10
+.. _0.11: https://github.com/feincms/django-imagefield/compare/0.10...0.11
+.. _0.12: https://github.com/feincms/django-imagefield/compare/0.11...0.12
+.. _0.13: https://github.com/feincms/django-imagefield/compare/0.12...0.13

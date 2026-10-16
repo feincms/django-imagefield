@@ -44,7 +44,7 @@ optional-dependencies.tests = [
 optional-dependencies.vips = [
   "pyvips[binary]>=2.2",
 ]
-urls.Homepage = "https://github.com/matthiask/django-imagefield/"
+urls.Homepage = "https://github.com/feincms/django-imagefield/"
 
 [tool.hatch]
 version.path = "imagefield/__init__.py"

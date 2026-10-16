@@ -2,8 +2,8 @@
 django-imagefield
 =================
 
-.. image:: https://github.com/matthiask/django-imagefield/workflows/Tests/badge.svg
-    :target: https://github.com/matthiask/django-imagefield
+.. image:: https://github.com/feincms/django-imagefield/workflows/Tests/badge.svg
+    :target: https://github.com/feincms/django-imagefield
 
 .. image:: https://readthedocs.org/projects/django-imagefield/badge/?version=latest
     :target: https://django-imagefield.readthedocs.io/en/latest/?badge=latest
