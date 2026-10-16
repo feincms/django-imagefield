@@ -311,7 +311,7 @@ class ImageFieldFile(files.ImageFieldFile):
 
     def save(self, name, content, save=True):  # noqa: FBT002
         if not settings.IMAGEFIELD_VALIDATE_ON_SAVE:
-            super().save(name, content, save=True)
+            super().save(name, content, save=save)
             return
 
         backend = get_backend()
