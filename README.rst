@@ -83,7 +83,7 @@ Installation
 
 Install from PyPI: ``pip install django-imagefield``.
 
-For faster image processing with pyvips (optional)::
+For the experimental pyvips backend (optional)::
 
     pip install django-imagefield[vips]
 
@@ -106,13 +106,10 @@ django-imagefield supports two image processing backends:
   The default backend using the Pillow library. Provides 100% backward
   compatibility with existing code. No configuration needed.
 
-**pyvips (optional, faster)**
-  An optional backend using the libvips library through pyvips. Offers
-  significantly better performance:
-
-  - Significantly faster image processing
-  - More memory-efficient image handling
-  - Improved handling of large images
+**pyvips (optional, experimental)**
+  An optional backend using the libvips library through pyvips. It is
+  intended to be faster and more memory-efficient than Pillow, especially for
+  large images, but hasn't been verified in production yet.
 
 To use the pyvips backend:
 
