@@ -284,6 +284,25 @@ class Test(BaseTest):
             m._skip_generate_files = True
             m.save()  # Doesn't crash
 
+    @override_settings(IMAGEFIELD_VALIDATE_ON_SAVE=False)
+    def test_no_validate_on_save_no_duplicates(self):
+        """Uploading without validation on save creates a single instance"""
+        client = self.login()
+
+        with openimage("python-logo.png") as f:
+            response = client.post(
+                "/admin/testapp/model/add/", {"image": f, "ppoi": "0.5x0.5"}
+            )
+            self.assertRedirects(response, "/admin/testapp/model/")
+
+        self.assertEqual(Model.objects.count(), 1)
+
+        m = Model(image="python-logo.png")
+        with openimage("python-logo.png") as f:
+            m.image.save("python-logo.png", ContentFile(f.read()), save=False)
+        self.assertIsNone(m.pk)
+        self.assertEqual(Model.objects.count(), 1)
+
     def test_no_validate_on_unchanged(self):
         """
         Saving a form without changing the image should not run
