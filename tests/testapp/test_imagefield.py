@@ -303,6 +303,20 @@ class Test(BaseTest):
         self.assertIsNone(m.pk)
         self.assertEqual(Model.objects.count(), 1)
 
+    def test_upload_extension_from_format(self):
+        """Uploaded files get the lowercased format name as extension"""
+        for source, extension in [
+            ("python-logo.jpg", ".jpeg"),
+            ("python-logo.tiff", ".tiff"),
+            ("python-logo.png", ".png"),
+        ]:
+            with self.subTest(source=source):
+                m = Model()
+                with openimage(source) as f:
+                    m.image.save("upload.bin", ContentFile(f.read()), save=False)
+                self.assertTrue(m.image.name.endswith(extension), m.image.name)
+                m.image.delete(save=False)
+
     def test_no_validate_on_unchanged(self):
         """
         Saving a form without changing the image should not run

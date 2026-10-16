@@ -322,7 +322,7 @@ class VipsIntegrationTest(BaseTest):
         m.image.save("test.jpg", ContentFile(buf.read()), save=False)
         m.save()
 
-        self.assertTrue(m.image.name.endswith(".jpg"))
+        self.assertTrue(m.image.name.endswith(".jpeg"))
 
         # Test PNG
         img = Image.new("RGB", (100, 100), color="blue")
