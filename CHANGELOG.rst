@@ -8,6 +8,8 @@ Next version
 
 - Added an ``imagefield.avif.avif`` spec for generating AVIF images,
   analogous to the existing ``imagefield.webp.webp`` spec.
+- Assigning ``False`` (the cleaned value of a cleared ``ClearableFileInput``)
+  to an image field now clears it instead of crashing when saving.
 
 
 0.23 (2026-10-16)

@@ -352,8 +352,16 @@ def raise_validation_error(field_name, exc):
     )
 
 
+class ImageFileDescriptor(files.ImageFileDescriptor):
+    def __set__(self, instance, value):
+        # ClearableFileInput returns False when clearing. save_form_data()
+        # converts it to "", but cleaned data may also be assigned directly.
+        super().__set__(instance, "" if value is False else value)
+
+
 class ImageField(models.ImageField):
     attr_class = ImageFieldFile
+    descriptor_class = ImageFileDescriptor
 
     def __init__(self, *args, **kwargs):
         self._auto_add_fields = kwargs.pop("auto_add_fields", False)

@@ -81,6 +81,16 @@ class Test(BaseTest):
         )
         self.assertContains(response, 'data-ppoi-id=""')
 
+    def test_assign_false_clears_image(self):
+        """Assigning ``False`` (the cleared value of ClearableFileInput) works"""
+        m = ModelWithOptional.objects.create(image="python-logo.png")
+        m.image = False
+        m.save()
+        self.assertEqual(m.image.name, "")
+        m.refresh_from_db()
+        self.assertEqual(m.image.name, "")
+        self.assertIsNone(m.image_width)
+
     def test_model_with_optional(self):
         """Behavior of model with ImageField(blank=True)"""
         client = self.login()
