@@ -10,6 +10,9 @@ Next version
   analogous to the existing ``imagefield.webp.webp`` spec.
 - Assigning ``False`` (the cleaned value of a cleared ``ClearableFileInput``)
   to an image field now clears it instead of crashing when saving.
+- Selected files are now previewed in the form widget before saving, and the
+  PPOI can already be set on the preview. The widget's JavaScript and CSS are
+  now always loaded, not only when the model has a ``PPOIField``.
 
 
 0.23 (2026-10-16)
