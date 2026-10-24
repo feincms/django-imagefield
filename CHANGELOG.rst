@@ -6,6 +6,9 @@ Change log
 Next version
 ~~~~~~~~~~~~
 
+- Added an ``imagefield.avif.avif`` spec for generating AVIF images,
+  analogous to the existing ``imagefield.webp.webp`` spec.
+
 
 0.23 (2026-10-16)
 ~~~~~~~~~~~~~~~~~

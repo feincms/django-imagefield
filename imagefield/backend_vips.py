@@ -62,7 +62,7 @@ class VipsBackend(ImageBackend):
         elif format.upper() == "PNG":
             if kwargs.get("optimize"):
                 vips_kwargs["compression"] = 9
-        elif format.upper() == "WEBP":
+        elif format.upper() in {"WEBP", "AVIF"}:
             if "quality" in kwargs:
                 vips_kwargs["Q"] = kwargs["quality"]
             if kwargs.get("lossless"):

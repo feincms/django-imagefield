@@ -8,10 +8,12 @@ import io
 from unittest.mock import patch
 
 import pyvips
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.test.utils import override_settings
 from PIL import Image
 
+from imagefield.avif import avif
 from imagefield.backends import get_backend, reset_backend
 from imagefield.processing_pillow import PILLOW_PROCESSORS
 from imagefield.processing_vips import VIPS_PROCESSORS, register_vips
@@ -309,6 +311,18 @@ class VipsIntegrationTest(BaseTest):
 
         # Should have processed the image
         self.assertTrue(m.image)
+
+    def test_avif_with_vips(self):
+        """AVIF spec should produce AVIF files with vips backend."""
+        formats = {"avif": avif(["default", ("crop", (20, 20))])}
+        with override_settings(IMAGEFIELD_FORMATS={"testapp.model.image": formats}):
+            m = Model.objects.create(image="python-logo.jpg")
+            self.assertTrue(m.image.avif.endswith(".avif"))
+
+        with m.image.storage.open(m.image.avif.removeprefix(settings.MEDIA_URL)) as f:
+            out = pyvips.Image.new_from_buffer(f.read(), "")
+        self.assertEqual(out.get("vips-loader"), "heifload_buffer")
+        self.assertEqual((out.width, out.height), (20, 20))
 
     def test_format_detection(self):
         """Format should be correctly detected with vips."""

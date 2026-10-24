@@ -519,6 +519,30 @@ Of course you can also access the model instance through the field file
 by way of its ``fieldfile.instance`` attribute and use those
 informations to customize the pipeline.
 
+Ready-made specs for generating WebP and AVIF images are available too;
+they wrap a list of processors:
+
+.. code-block:: python
+
+    from imagefield.avif import avif
+    from imagefield.webp import webp
+
+    class Model(...):
+        image = ImageField(
+            ...,
+            formats={
+                "thumb": ["default", ("crop", (300, 300))],
+                "thumb_webp": webp(["default", ("crop", (300, 300))]),
+                "thumb_avif": avif(["default", ("crop", (300, 300))]),
+            },
+        )
+
+AVIF support requires a Pillow build with AVIF support (check with
+``PIL.features.check("avif")``) or a libvips built with AVIF support when
+using the vips backend. See `the tests
+<https://github.com/feincms/django-imagefield/blob/main/tests/testapp/test_imagefield.py>`__
+for working examples.
+
 
 Settings
 ========

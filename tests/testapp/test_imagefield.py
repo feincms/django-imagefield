@@ -18,6 +18,7 @@ from django.test.utils import isolate_apps, override_settings
 from django.urls import reverse
 from PIL import Image
 
+from imagefield.avif import avif
 from imagefield.fields import (
     IMAGEFIELDS,
     Context,
@@ -25,6 +26,7 @@ from imagefield.fields import (
     ImageFieldFile,
     _SealableAttribute,
 )
+from imagefield.webp import webp
 from testapp.models import (
     Model,
     ModelWithOptional,
@@ -503,6 +505,29 @@ class Test(BaseTest):
         # looks safe); Pillow's MPO save still produces valid JPEG output.
         WebsafeImage.objects.create(image="mpo-as-jpeg.jpg")
         self._assert_processed_jpeg("mpo-as-jpeg.jpg")
+
+    @override_settings(
+        IMAGEFIELD_FORMATS={
+            "testapp.model.image": {
+                "webp": webp(["default", ("crop", (20, 20))]),
+                "avif": avif(["default", ("crop", (20, 20))]),
+            }
+        }
+    )
+    def test_webp_and_avif(self):
+        m = Model.objects.create(image="python-logo.jpg")
+        self.assertTrue(m.image.webp.endswith(".webp"))
+        self.assertTrue(m.image.avif.endswith(".avif"))
+
+        files = contents("__processed__")
+        self.assertEqual(len(files), 2)
+        for root, _dirs, fnames in os.walk(
+            os.path.join(settings.MEDIA_ROOT, "__processed__")
+        ):
+            for fname in fnames:
+                with Image.open(os.path.join(root, fname)) as out:
+                    self.assertEqual(out.format, fname.rsplit(".", 1)[1].upper())
+                    self.assertEqual(out.size, (20, 20))
 
     def test_websafe_gif(self):
         WebsafeImage.objects.create(image="python-logo.gif")
