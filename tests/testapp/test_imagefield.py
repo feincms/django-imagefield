@@ -91,6 +91,23 @@ class Test(BaseTest):
         self.assertEqual(m.image.name, "")
         self.assertIsNone(m.image_width)
 
+    def test_preview_for_new_upload(self):
+        """The preview markup and JS is there before an image has been saved"""
+        client = self.login()
+        response = client.get("/admin/testapp/model/add/")
+        self.assertContains(response, 'src="/static/imagefield/ppoi.js"')
+        self.assertContains(response, '<div class="imagefield" data-ppoi-id="id_ppoi">')
+        self.assertContains(
+            response,
+            '<div class="imagefield-preview" hidden>'
+            '<img class="imagefield-preview-image" src="data:," alt=""/>',
+        )
+
+        # Media is also added for image fields without a PPOI field
+        response = client.get("/admin/testapp/nullableimage/add/")
+        self.assertContains(response, 'src="/static/imagefield/ppoi.js"')
+        self.assertContains(response, '<div class="imagefield" data-ppoi-id="">')
+
     def test_model_with_optional(self):
         """Behavior of model with ImageField(blank=True)"""
         client = self.login()

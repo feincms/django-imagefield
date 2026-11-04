@@ -25,16 +25,48 @@ class PPOIWidget(forms.HiddenInput):
 
 
 class PreviewAndPPOIMixin:
+    class Media:
+        css = {"screen": ("imagefield/ppoi.css",)}
+        js = ("imagefield/ppoi.js",)
+
     def render(self, name, value, attrs=None, **kwargs):
         attrs = attrs or {}
         # Can be dropped once we drop support for Django<2.1
         attrs.setdefault("accept", "image/*")
         widget = super().render(name, value, attrs=attrs, **kwargs)
 
+        url = ""
         # name does not require a file, .url does
-        if not getattr(value, "name", "") or isinstance(value, UploadedFile):
-            return widget
+        if getattr(value, "name", "") and not isinstance(value, UploadedFile):
+            processors = self._unbind_processors()
+            context = value._process_context(processors)
+            key = cache_key(context.name)
+            url = value.storage.url(context.name)
+            if not cache.get(key):
+                try:
+                    value.process(processors)
+                    cache.set(key, 1, timeout=cache_timeout())
+                except Exception:
+                    # Avoid crashing here since it will not be possible to even
+                    # replace corrupted images otherwise.
+                    pass
 
+        return format_html(
+            '<div class="imagefield" data-ppoi-id="{ppoi}">'
+            '<div class="imagefield-preview"{hidden}>'
+            '<img class="imagefield-preview-image" src="{url}" alt=""/>'
+            "</div>"
+            '<div class="imagefield-widget">{widget}</div>'
+            "</div>",
+            widget=widget,
+            # An empty but valid image source, replaced by ppoi.js when a file
+            # is selected.
+            url=url or "data:,",
+            hidden="" if url else " hidden",
+            ppoi=self._ppoi_id(),
+        )
+
+    def _ppoi_id(self):
         # Find our BoundField so that we may access the form instance to
         # finally determine the ID attribute of our PPOI field.
         frame = inspect.currentframe()
@@ -45,40 +77,15 @@ class PreviewAndPPOIMixin:
             frame = frame.f_back
 
         if frame is None:  # pragma: no cover
-            # Bail out. I have absolutely no idea why this would ever happen.
-            return widget
+            # I have absolutely no idea why this would ever happen.
+            return ""
 
         del frame
 
         try:
-            ppoi = boundfield.form[boundfield.field.widget.ppoi_field].auto_id
+            return boundfield.form[boundfield.field.widget.ppoi_field].auto_id
         except (AttributeError, KeyError, TypeError):
-            ppoi = ""
-
-        processors = self._unbind_processors()
-        context = value._process_context(processors)
-        key = cache_key(context.name)
-        url = value.storage.url(context.name)
-        if not cache.get(key):
-            try:
-                value.process(processors)
-                cache.set(key, 1, timeout=cache_timeout())
-            except Exception:
-                # Avoid crashing here since it will not be possible to even
-                # replace corrupted images otherwise.
-                pass
-
-        return format_html(
-            '<div class="imagefield" data-ppoi-id="{ppoi}">'
-            '<div class="imagefield-preview">'
-            '<img class="imagefield-preview-image" src="{url}" alt=""/>'
-            "</div>"
-            '<div class="imagefield-widget">{widget}</div>'
-            "</div>",
-            widget=widget,
-            url=url,
-            ppoi=ppoi,
-        )
+            return ""
 
     def _unbind_processors(self):
         # Unwrap the original processors value. Callable processor specs are
