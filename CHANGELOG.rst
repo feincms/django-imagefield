@@ -14,6 +14,9 @@ Next version
   ``forkserver`` or ``spawn`` start methods (the default on Python 3.14+ on
   Linux and on macOS) by setting up Django in the pool workers.
 - Fixed a crash in ``process_imagefields`` for fields with a fallback image.
+- Selected files are now previewed in the form widget before saving, and the
+  PPOI can already be set on the preview. The widget's JavaScript and CSS are
+  now always loaded, not only when the model has a ``PPOIField``.
 
 
 0.23 (2026-10-16)

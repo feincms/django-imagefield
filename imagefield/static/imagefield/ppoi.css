@@ -3,6 +3,9 @@
   display: inline-block;
   max-width: 56rem;
 }
+.imagefield-preview[hidden] {
+  display: none;
+}
 .imagefield-preview img {
   max-width: 100%;
 }
