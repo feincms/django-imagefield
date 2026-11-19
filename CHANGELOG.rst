@@ -10,6 +10,7 @@ Next version
   analogous to the existing ``imagefield.webp.webp`` spec.
 - Assigning ``False`` (the cleaned value of a cleared ``ClearableFileInput``)
   to an image field now clears it instead of crashing when saving.
+- Fixed a crash in ``process_imagefields`` for fields with a fallback image.
 
 
 0.23 (2026-10-16)

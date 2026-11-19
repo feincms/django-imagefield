@@ -86,7 +86,7 @@ class Command(BaseCommand):
         self.stdout.write("\r|{}| {}/{}".format(" " * 50, 0, count), ending="")
 
         if field._fallback:
-            self._process_instance(
+            _process_instance(
                 field.model(),
                 field,
                 housekeep=None,
