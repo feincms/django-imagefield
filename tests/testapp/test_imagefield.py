@@ -1,4 +1,5 @@
 import io
+import multiprocessing as mp
 import os
 import pickle
 import re
@@ -12,8 +13,9 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.management import call_command
 from django.db import models
-from django.test import Client
+from django.test import Client, TransactionTestCase
 from django.test.utils import isolate_apps, override_settings
 from django.urls import reverse
 from PIL import Image
@@ -720,4 +722,36 @@ class Test(BaseTest):
         # This should work - the widget gets wrapped with preview functionality
         self.assertIn(
             "WithPreviewAndPPOI", form.fields["image"].widget.__class__.__name__
+        )
+
+
+class ProcessImagefieldsTest(TransactionTestCase):
+    def tearDown(self):
+        BaseTest._rmtree(self)
+
+    def test_process_imagefields_forkserver(self):
+        """process_imagefields works with start methods which do not fork"""
+        WebsafeImage.objects.create(image="python-logo.jpg")
+        WebsafeImage.objects.create(image="cmyk.jpg")
+        BaseTest._rmtree(self)
+
+        with patch(
+            "imagefield.management.commands.process_imagefields.mp",
+            mp.get_context("forkserver"),
+        ):
+            call_command(
+                "process_imagefields",
+                "testapp.websafeimage.image",
+                force=True,
+                stdout=io.StringIO(),
+                stderr=io.StringIO(),
+            )
+
+        self.assertEqual(
+            contents("__processed__"),
+            [
+                "cmyk-24f8702383e7.jpg",
+                "python-logo-24f8702383e7.jpg",
+                "python-logo-2ebc6e32bcdb.jpg",
+            ],
         )

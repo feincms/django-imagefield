@@ -3,6 +3,7 @@ import sys
 from fnmatch import fnmatch
 from functools import partial
 
+import django
 from django.core.management.base import BaseCommand, CommandError
 
 from imagefield.fields import IMAGEFIELDS
@@ -117,7 +118,7 @@ class Command(BaseCommand):
                 instance._skip_generate_files = True
                 instance.save()
         else:
-            pool = mp.Pool()
+            pool = mp.Pool(initializer=django.setup)
             try:
                 for index, (instance, errors) in enumerate(
                     pool.imap(fn, queryset.iterator(chunk_size=100))

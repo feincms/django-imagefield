@@ -10,6 +10,9 @@ Next version
   analogous to the existing ``imagefield.webp.webp`` spec.
 - Assigning ``False`` (the cleaned value of a cleared ``ClearableFileInput``)
   to an image field now clears it instead of crashing when saving.
+- Fixed ``process_imagefields`` hanging when multiprocessing uses the
+  ``forkserver`` or ``spawn`` start methods (the default on Python 3.14+ on
+  Linux and on macOS) by setting up Django in the pool workers.
 - Fixed a crash in ``process_imagefields`` for fields with a fallback image.
 
 
