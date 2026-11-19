@@ -6,6 +6,9 @@ Change log
 Next version
 ~~~~~~~~~~~~
 
+0.24 (2026-11-19)
+~~~~~~~~~~~~~~~~~
+
 - Added an ``imagefield.avif.avif`` spec for generating AVIF images,
   analogous to the existing ``imagefield.webp.webp`` spec.
 - Assigning ``False`` (the cleaned value of a cleared ``ClearableFileInput``)
