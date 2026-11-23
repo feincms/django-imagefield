@@ -7,6 +7,7 @@ This document provides guidance for AI coding agents working on the django-image
 django-imagefield is a Django library for handling images with automatic processing and multiple format generation. It supports two backends: Pillow (default) and pyvips (optional, faster).
 
 **Key directories:**
+
 - `imagefield/` - Main package code
 - `tests/testapp/` - Test application and test suite
 - `docs/` - Documentation (includes README.rst)
@@ -22,12 +23,14 @@ django-imagefield is a Django library for handling images with automatic process
 ### Testing Requirements
 
 **Run tests through tox:**
+
 ```bash
 tox -l             # List available test environments
 tox -e py313-dj52  # Run a specific environment (use tox -l to find current ones)
 ```
 
 **Important testing practices:**
+
 - Write tests for new functionality in `tests/testapp/test_imagefield.py`
 - Place imports at the top of test files, not inside test methods
 - Use `--keepdb` flag for faster test iterations (already in tox config)
@@ -46,10 +49,12 @@ tox -e py313-dj52  # Run a specific environment (use tox -l to find current ones
 ### Dual Backend System
 
 The library supports two image processing backends:
+
 - **Pillow** (`processing_pillow.py`, `backend_pillow.py`) - Default, 100% backward compatible
 - **pyvips** (`processing_vips.py`, `backend_vips.py`) - Optional, faster, more memory efficient
 
 **When adding processors:**
+
 - Register Pillow processors with `@register_pillow`
 - Register pyvips processors with `@register_vips` (if installed)
 - Processors receive native backend objects (PIL.Image or pyvips.Image)
@@ -68,6 +73,7 @@ The library supports two image processing backends:
 ### README.rst Structure
 
 The README serves as both GitHub documentation and Sphinx source:
+
 - Keep documentation minimal and focused
 - Use concrete examples with real code
 - Link to test files for working examples using GitHub URLs
@@ -94,6 +100,7 @@ The README serves as both GitHub documentation and Sphinx source:
 ### Image Processing Pipeline
 
 Processors are middleware-style functions:
+
 ```python
 @register_pillow
 def my_processor(get_image, arg1, arg2):
@@ -109,6 +116,7 @@ def my_processor(get_image, arg1, arg2):
 ### Context Object
 
 The `Context` object carries processing state:
+
 - `ppoi` - Primary point of interest [x, y] (sealed)
 - `extension` - File extension (sealed)
 - `processors` - Processor list (sealed)
@@ -120,6 +128,7 @@ Sealed attributes cannot be modified after `context.seal()` is called.
 ### Widget System
 
 The widget wrapping in `fields.py` expects widget **classes**, not instances:
+
 - `with_preview_and_ppoi()` creates a dynamic class
 - It wraps any widget class with preview/PPOI functionality
 - Pass classes to `formfield(widget=WidgetClass)`, not instances
@@ -137,11 +146,13 @@ The widget wrapping in `fields.py` expects widget **classes**, not instances:
 ## File Organization
 
 **Don't create unnecessary files:**
+
 - No new markdown/documentation files without explicit request
 - Don't create helper utilities for one-time operations
 - Don't add configuration for hypothetical future needs
 
 **Settings in fields.py:**
+
 - All settings have defaults in the `DEFAULTS` dict
 - Settings are set as attributes on Django's settings object
 - Use `getattr(settings, 'SETTING_NAME')` to access
@@ -149,6 +160,7 @@ The widget wrapping in `fields.py` expects widget **classes**, not instances:
 ## When Stuck
 
 If you need to understand complex behavior:
+
 1. Read the test files - they show real usage
 2. Check both backend implementations for consistency
 3. Look at `fields.py` for the model field behavior
