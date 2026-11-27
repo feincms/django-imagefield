@@ -11,6 +11,7 @@ from unittest.mock import PropertyMock, patch
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core import serializers
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.management import call_command
@@ -314,6 +315,21 @@ class Test(BaseTest):
             m = Model(image="broken.png")
             m._skip_generate_files = True
             m.save()  # Doesn't crash
+
+    def test_raw_save(self):
+        """Raw saves (loaddata) don't generate files, even for missing images"""
+        for image in ["images/does-not-exist.jpg", "python-logo.png"]:
+            with self.subTest(image=image):
+                data = (
+                    '[{"model": "testapp.model", "fields": {"image": "%s",'
+                    ' "width": 100, "height": 100, "ppoi": "0.5x0.5"}}]' % image
+                )
+                for obj in serializers.deserialize("json", data):
+                    obj.save()  # Calls save_base(raw=True) like loaddata
+
+                self.assertEqual(contents("__processed__"), [])
+
+        self.assertEqual(Model.objects.count(), 2)
 
     @override_settings(IMAGEFIELD_VALIDATE_ON_SAVE=False)
     def test_no_validate_on_save_no_duplicates(self):

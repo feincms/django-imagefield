@@ -443,9 +443,10 @@ class ImageField(models.ImageField):
         if not data and self.ppoi_field:
             setattr(instance, self.ppoi_field, "0.5x0.5")
 
-    def _generate_files(self, instance, **kwargs):
-        # Set by the process_imagefields management command
-        if getattr(instance, "_skip_generate_files", False):
+    def _generate_files(self, instance, *, raw=False, **kwargs):
+        # Raw saves (loaddata) shouldn't touch files, and _skip_generate_files
+        # is set by the process_imagefields management command
+        if raw or getattr(instance, "_skip_generate_files", False):
             return
 
         f = getattr(instance, self.name)

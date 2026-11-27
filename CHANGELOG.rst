@@ -6,6 +6,11 @@ Change log
 Next version
 ~~~~~~~~~~~~
 
+- Processed images are no longer generated for raw saves, e.g. when loading
+  fixtures with ``loaddata``. Loading fixtures which reference missing media
+  files doesn't crash anymore. Run ``./manage.py process_imagefields`` after
+  loading fixtures with real media files to generate the processed images.
+
 0.24 (2026-11-19)
 ~~~~~~~~~~~~~~~~~
 
